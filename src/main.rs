@@ -21,17 +21,7 @@ pub trait SystemData<'a> {
     type Value;
 }
 
-pub struct Query<Q> {
-    fetch: Q,
-}
-
-impl<Q> Query<Q> {
-    pub fn new(fetch: Q) -> Self {
-        Self { fetch }
-    }
-}
-
-impl<'a, Q> SystemData<'a> for Query<Q>
+impl<'a, Q> SystemData<'a> for Q
 where
     Q: 'static,
 {
@@ -67,20 +57,20 @@ where
 impl<'this, Func, Ret, A> SystemFn<'this, A, Ret> for Func
 where
     for<'x> A: AsBorrow<'x>,
-    for<'x> Func: FnMut(<A as AsBorrow<'x>>::Borrowed) -> Ret,
+    for<'x> Func: Fn(<A as AsBorrow<'x>>::Borrowed) -> Ret,
 {
 }
 
 fn main() {
-    let component: Component<f32> = Component {
+    let component: Component<i32> = Component {
         marker: PhantomData,
     };
 
-    let query = Query::new(Wrapper {
+    let query = Wrapper {
         component,
-        value: 0.0,
-    });
+        value: 0,
+    };
 
-    // Component instead of the actual Wrapper<Component<f32>, f32>>
-    let system = build(query, |query: QueryBorrow<Component<f32>>| {});
+    // Component instead of the actual Wrapper<Component<i32>, i32>>
+    let system = build(query, |query: QueryBorrow<Component<i32>>| {});
 }
